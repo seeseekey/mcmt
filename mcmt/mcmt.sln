@@ -3,6 +3,10 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mcmt", "mcmt.csproj", "{0BEC86DA-7C87-4F5D-B8F5-7EAC67487DE9}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Substrate (NET4)", "..\Externals\Substrate\Substrate (NET4).csproj", "{7264A1C4-AB4A-4437-B252-7379B98B5509}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSCL", "..\..\cscl.googlecode.com\CSCL\CSCL.csproj", "{0E720343-5366-4C3A-BC59-7B7FD2C311B5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -13,6 +17,14 @@ Global
 		{0BEC86DA-7C87-4F5D-B8F5-7EAC67487DE9}.Debug|x86.Build.0 = Debug|x86
 		{0BEC86DA-7C87-4F5D-B8F5-7EAC67487DE9}.Release|x86.ActiveCfg = Release|x86
 		{0BEC86DA-7C87-4F5D-B8F5-7EAC67487DE9}.Release|x86.Build.0 = Release|x86
+		{0E720343-5366-4C3A-BC59-7B7FD2C311B5}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0E720343-5366-4C3A-BC59-7B7FD2C311B5}.Debug|x86.Build.0 = Debug|Any CPU
+		{0E720343-5366-4C3A-BC59-7B7FD2C311B5}.Release|x86.ActiveCfg = Release|Any CPU
+		{0E720343-5366-4C3A-BC59-7B7FD2C311B5}.Release|x86.Build.0 = Release|Any CPU
+		{7264A1C4-AB4A-4437-B252-7379B98B5509}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7264A1C4-AB4A-4437-B252-7379B98B5509}.Debug|x86.Build.0 = Debug|Any CPU
+		{7264A1C4-AB4A-4437-B252-7379B98B5509}.Release|x86.ActiveCfg = Release|Any CPU
+		{7264A1C4-AB4A-4437-B252-7379B98B5509}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		StartupItem = mcmt.csproj

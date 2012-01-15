@@ -1,2 +1,6 @@
-#build folder
+# Build folder
 mcmt/bin
+
+# Debug files
+*.pidb
+
