@@ -36,7 +36,7 @@ namespace mcmt
 			Console.WriteLine("  z.B. mcmt -repairBedrockLayer D:\\world");
 			Console.WriteLine("");
 			Console.WriteLine("  -repairBedrockLayer <worldPath>");
-			Console.WriteLine("  -replace (not implemented)");
+			Console.WriteLine("  -replaceBlocks <worldPath> <blockIDBefore> <blockIDAfter>");
 		}
 		
 		static List<string> GetFilesFromParameters(Parameters param)
@@ -55,10 +55,10 @@ namespace mcmt
 		}
 		
 		#region Functions
-		private static void RepairBedrockLayer(string dest)
+		private static void RepairBedrockLayer(string worldPath)
 		{
 			// Open our world
-			BetaWorld world=BetaWorld.Open(dest);
+			BetaWorld world=BetaWorld.Open(worldPath);
 
 			// The chunk manager is more efficient than the block manager for
 			// this purpose, since we'll inspect every block
@@ -97,6 +97,51 @@ namespace mcmt
 				cm.Save();
 			}
 		}
+
+		private static void ReplaceBlocks(string worldPath, int before, int after)
+		{
+			// Open our world
+			BetaWorld world=BetaWorld.Open(worldPath);
+
+			// The chunk manager is more efficient than the block manager for
+			// this purpose, since we'll inspect every block
+			BetaChunkManager cm=world.GetChunkManager();
+
+			foreach(ChunkRef chunk in cm)
+			{
+				Console.WriteLine("Process chunk: {0}/{1}", chunk.X, chunk.Z);
+
+				// You could hardcode your dimensions, but maybe some day they
+				// won't always be 16.  Also the CLR is a bit stupid and has
+				// trouble optimizing repeated calls to Chunk.Blocks.xx, so we
+				// cache them in locals
+				int xdim=chunk.Blocks.XDim;
+				int ydim=chunk.Blocks.YDim;
+				int zdim=chunk.Blocks.ZDim;
+
+				// x, z, y is the most efficient order to scan blocks (not that
+				// you should care about internal detail)
+				for(int x=0; x<xdim; x++)
+				{
+					for(int z=0; z<zdim; z++)
+					{
+						for(int y=0; y<ydim; y++)
+						{
+
+							// Replace the block with after if it matches before
+							if(chunk.Blocks.GetID(x, y, z)==before)
+							{
+								chunk.Blocks.SetData(x, y, z, 0);
+								chunk.Blocks.SetID(x, y, z, after);
+							}
+						}
+					}
+				}
+
+				// Save the chunk
+				cm.Save();
+			}
+		}
 		#endregion
 		
 		public static void Main(string[] args)
@@ -124,12 +169,25 @@ namespace mcmt
 				if(files.Count==0) Console.WriteLine("No filename detected!");
 				else
 				{
-					RepairBedrockLayer(files[0]);
+					foreach(string file in files)
+					{
+						RepairBedrockLayer(file);
+					}
 				}
 			}
-			else if(parameters.GetBool("replace"))
+			else if(parameters.GetBool("replaceBlocks"))
 			{
-				throw new NotImplementedException();
+				List<string> files=GetFilesFromParameters(parameters);
+
+				if(files.Count<3) Console.WriteLine("Need more parameters!");
+				else
+				{
+					string worldPath=files[0];
+					int before=Convert.ToInt32(files[1]);
+					int after=Convert.ToInt32(files[2]);
+
+					ReplaceBlocks(worldPath, before, after);
+				}
 			}
 			else
 			{
