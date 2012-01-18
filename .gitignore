@@ -1,5 +1,6 @@
 # Build folder
 mcmt/bin
+mcmt/obj
 
 # Debug files
 *.pidb

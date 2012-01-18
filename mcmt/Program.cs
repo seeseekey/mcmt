@@ -30,11 +30,11 @@ namespace mcmt
 	{
 		static void DisplayHelp()
 		{
-			Console.WriteLine("mcmt v1.05");
+			Console.WriteLine("mcmt v1.10");
 			Console.WriteLine("(c) 2012 by the seeseekey (http://seeseekey.net)");
 			Console.WriteLine("");
-			Console.WriteLine("Nutzung: mcmt -action -parameters");
-			Console.WriteLine("  z.B. mcmt -repairBedrockLayer D:\\world");
+			Console.WriteLine("Usage: mcmt -action -parameters");
+			Console.WriteLine("  e.g. mcmt -repairBedrockLayer D:\\world");
 			Console.WriteLine("");
 			Console.WriteLine("  -createFlatWorld <worldPath> <xmin> <xmax> <zMin> <zMax>");
 			Console.WriteLine("  -relightWorld <worldPath>");
