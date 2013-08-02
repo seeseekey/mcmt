@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using CSCL;
 using Substrate;
 using Substrate.Core;
+using CSCL.Helpers;
 
 namespace mcmt
 {
@@ -40,22 +41,7 @@ namespace mcmt
 			Console.WriteLine("  -repairBedrockLayer <worldPath>");
 			Console.WriteLine("  -replaceBlocks <worldPath> <blockIDBefore> <blockIDAfter>");
 		}
-		
-		static List<string> GetFilesFromParameters(Parameters param)
-		{
-			List<string> ret=new List<string>();
-
-			foreach(string i in param.GetNames())
-			{
-				if(i.StartsWith("file"))
-				{
-					ret.Add(param.GetString(i));
-				}
-			}
-
-			return ret;
-		}
-		
+			
 		#region Functions
 		private static void CreateFlatWorld(string dest, int xmin, int xmax, int zmin, int zmax)
 		{
@@ -321,11 +307,11 @@ namespace mcmt
 		public static void Main(string[] args)
 		{		
 			//Parameter auswerten
-			Parameters parameters=null;
+			Dictionary<string, string> parameters=null;
 
 			try
 			{
-				parameters=Parameters.InterpretCommandLine(args);
+				parameters=CommandLineHelpers.GetCommandLine(args);
 			}
 			catch
 			{
@@ -336,9 +322,9 @@ namespace mcmt
 			}
 
 			//Aktion starten
-			if(parameters.GetBool("createFlatWorld"))
+			if(parameters.ContainsKey("createFlatWorld"))
 			{
-				List<string> files=GetFilesFromParameters(parameters);
+				List<string> files=CommandLineHelpers.GetFilesFromCommandline(parameters);
 
 				if(files.Count<5) Console.WriteLine("Need more parameters!");
 				else
@@ -352,9 +338,9 @@ namespace mcmt
 					CreateFlatWorld(worldPath, xmin, xmax, zMin, zMax);
 				}
 			}
-			else if(parameters.GetBool("removeEntity"))
+			else if(parameters.ContainsKey("removeEntity"))
 			{
-				List<string> files=GetFilesFromParameters(parameters);
+				List<string> files=CommandLineHelpers.GetFilesFromCommandline(parameters);
 
 				if(files.Count<2) Console.WriteLine("Need more parameters!");
 				else
@@ -365,9 +351,9 @@ namespace mcmt
 					RemoveEntity(worldPath, entityId);
 				}
 			}
-			else if(parameters.GetBool("relightWorld"))
+			else if(parameters.ContainsKey("relightWorld"))
 			{
-				List<string> files=GetFilesFromParameters(parameters);
+				List<string> files=CommandLineHelpers.GetFilesFromCommandline(parameters);
 
 				if(files.Count==0) Console.WriteLine("No filename detected!");
 				else
@@ -378,9 +364,9 @@ namespace mcmt
 					}
 				}
 			}
-			else if(parameters.GetBool("repairBedrockLayer"))
-			{				
-				List<string> files=GetFilesFromParameters(parameters);
+			else if(parameters.ContainsKey("repairBedrockLayer"))
+			{
+				List<string> files=CommandLineHelpers.GetFilesFromCommandline(parameters);
 
 				if(files.Count==0) Console.WriteLine("No filename detected!");
 				else
@@ -391,9 +377,9 @@ namespace mcmt
 					}
 				}
 			}
-			else if(parameters.GetBool("replaceBlocks"))
+			else if(parameters.ContainsKey("replaceBlocks"))
 			{
-				List<string> files=GetFilesFromParameters(parameters);
+				List<string> files=CommandLineHelpers.GetFilesFromCommandline(parameters);
 
 				if(files.Count<3) Console.WriteLine("Need more parameters!");
 				else
