@@ -73,6 +73,11 @@ namespace Substrate
             return GetBlockManagerVirt(dim);
         }
 
+        public IBlockManager GetBlockManager (string dim)
+        {
+            return GetBlockManagerVirt(dim);
+        }
+
         /// <summary>
         /// Gets an <see cref="IChunkManager"/> for the default dimension.
         /// </summary>
@@ -88,6 +93,11 @@ namespace Substrate
         /// <param name="dim">The id of the dimension to look up.</param>
         /// <returns>An <see cref="IChunkManager"/> tied to the given dimension in this world.</returns>
         public IChunkManager GetChunkManager (int dim)
+        {
+            return GetChunkManagerVirt(dim);
+        }
+
+        public IChunkManager GetChunkManager (string dim)
         {
             return GetChunkManagerVirt(dim);
         }
@@ -137,6 +147,11 @@ namespace Substrate
         }
 
         /// <summary>
+        /// Saves the world's <see cref="Level"/> data, and any <see cref="IChunk"/> objects known to have unsaved changes.
+        /// </summary>
+        public abstract void Save ();
+
+        /// <summary>
         /// Raised when <see cref="Open"/> is called, used to find a concrete <see cref="NbtWorld"/> type that can open the world.
         /// </summary>
         protected static event EventHandler<OpenWorldEventArgs> ResolveOpen;
@@ -157,6 +172,16 @@ namespace Substrate
         /// <returns>An <see cref="IChunkManager"/> for the given dimension in the world.</returns>
         protected abstract IChunkManager GetChunkManagerVirt (int dim);
 
+        protected virtual IBlockManager GetBlockManagerVirt (string dim)
+        {
+            throw new NotImplementedException();
+        }
+
+        protected virtual IChunkManager GetChunkManagerVirt (string dim)
+        {
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Virtual implementor of <see cref="GetPlayerManager"/>.
         /// </summary>
@@ -176,8 +201,9 @@ namespace Substrate
 
         static NbtWorld ()
         {
-            ResolveOpen += AlphaWorld.OnResolveOpen;
+            ResolveOpen += AnvilWorld.OnResolveOpen;
             ResolveOpen += BetaWorld.OnResolveOpen;
+            ResolveOpen += AlphaWorld.OnResolveOpen;
         }
     }
 }

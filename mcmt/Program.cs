@@ -61,7 +61,7 @@ namespace mcmt
 		{
 			// This will instantly create any necessary directory structure
 			BetaWorld world=BetaWorld.Create(dest);
-			BetaChunkManager cm=world.GetChunkManager();
+			IChunkManager cm=world.GetChunkManager();
 
 			// We can set different world parameters
 			world.Level.LevelName="FlatWorld";
@@ -203,7 +203,7 @@ namespace mcmt
 
 			// Load world
 			BetaWorld world=BetaWorld.Open(worldPath);
-			BetaChunkManager cm=world.GetChunkManager();
+			IChunkManager cm=world.GetChunkManager();
 
 			// Remove entities
 			foreach(ChunkRef chunk in cm)
@@ -236,7 +236,7 @@ namespace mcmt
 
 			// The chunk manager is more efficient than the block manager for
 			// this purpose, since we'll inspect every block
-			BetaChunkManager cm=world.GetChunkManager();
+			IChunkManager cm=world.GetChunkManager();
 
 			foreach(ChunkRef chunk in cm)
 			{
@@ -279,7 +279,7 @@ namespace mcmt
 
 			// The chunk manager is more efficient than the block manager for
 			// this purpose, since we'll inspect every block
-			BetaChunkManager cm=world.GetChunkManager();
+			IChunkManager cm=world.GetChunkManager();
 
 			foreach(ChunkRef chunk in cm)
 			{

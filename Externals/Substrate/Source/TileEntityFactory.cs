@@ -36,17 +36,39 @@ namespace Substrate
         /// </summary>
         /// <param name="tree">A <see cref="TagNodeCompound"/> representing a single Tile Entity, containing an 'id' field of the Tile Entity's registered name.</param>
         /// <returns>A new instance of a concrete <see cref="TileEntity"/> type, or null if no type was registered with the given name.</returns>
-        public static TileEntity Create (TagNodeCompound tree)
+        public static TileEntity Create(TagNodeCompound tree)
         {
             string type = tree["id"].ToTagString();
 
             Type t;
-            if (!_registry.TryGetValue(type, out t)) {
+            if (!_registry.TryGetValue(type, out t))
+            {
                 return null;
             }
 
             TileEntity te = Activator.CreateInstance(t) as TileEntity;
 
+            return te.LoadTreeSafe(tree);
+        }
+
+        /// <summary>
+        /// Create a new instance of a concrete <see cref="TileEntity"/> type by NBT node.
+        /// </summary>
+        /// <param name="tree">A <see cref="TagNodeCompound"/> representing a single Tile Entity, containing an 'id' field of the Tile Entity's registered name.</param>
+        /// <returns>A new instance of a concrete <see cref="TileEntity"/> type, or null if no type was registered with the given name.</returns>
+        public static TileEntity CreateGeneric(TagNodeCompound tree)
+        {
+            string type = tree["id"].ToTagString();
+
+            Type t;
+
+            if (!_registry.TryGetValue(type, out t))
+            {
+                t = typeof (TileEntity);
+            }
+
+            TileEntity te = Activator.CreateInstance(t, true) as TileEntity;
+            
             return te.LoadTreeSafe(tree);
         }
 
@@ -91,8 +113,10 @@ namespace Substrate
         static TileEntityFactory ()
         {
             _registry[TileEntityEndPortal.TypeId] = typeof(TileEntityEndPortal);
+            _registry[TileEntityBeacon.TypeId] = typeof(TileEntityBeacon);
             _registry[TileEntityBrewingStand.TypeId] = typeof(TileEntityBrewingStand);
             _registry[TileEntityChest.TypeId] = typeof(TileEntityChest);
+            _registry[TileEntityControl.TypeId] = typeof(TileEntityControl);
             _registry[TileEntityEnchantmentTable.TypeId] = typeof(TileEntityEnchantmentTable);
             _registry[TileEntityFurnace.TypeId] = typeof(TileEntityFurnace);
             _registry[TileEntityMobSpawner.TypeId] = typeof(TileEntityMobSpawner);

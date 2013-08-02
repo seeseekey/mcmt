@@ -17,6 +17,9 @@ namespace Substrate
             new SchemaNodeScaler("Count", TagType.TAG_BYTE),
             new SchemaNodeCompound("tag", new SchemaNodeCompound("") {
                 new SchemaNodeList("ench", TagType.TAG_COMPOUND, Enchantment.Schema, SchemaOptions.OPTIONAL),
+                new SchemaNodeScaler("title", TagType.TAG_STRING, SchemaOptions.OPTIONAL),
+                new SchemaNodeScaler("author", TagType.TAG_STRING, SchemaOptions.OPTIONAL),
+                new SchemaNodeList("pages", TagType.TAG_STRING, SchemaOptions.OPTIONAL),
             }, SchemaOptions.OPTIONAL),
         };
 
@@ -34,6 +37,7 @@ namespace Substrate
         public Item ()
         {
             _enchantments = new List<Enchantment>();
+            _source = new TagNodeCompound();
         }
 
         /// <summary>
@@ -93,6 +97,14 @@ namespace Substrate
         }
 
         /// <summary>
+        /// Gets the source <see cref="TagNodeCompound"/> used to create this <see cref="Item"/> if it exists.
+        /// </summary>
+        public TagNodeCompound Source
+        {
+            get { return _source; }
+        }
+
+        /// <summary>
         /// Gets a <see cref="SchemaNode"/> representing the schema of an item.
         /// </summary>
         public static SchemaNodeCompound Schema
@@ -134,6 +146,8 @@ namespace Substrate
             if (ctree == null) {
                 return null;
             }
+
+            _enchantments.Clear();
 
             _id = ctree["id"].ToTagShort();
             _count = ctree["Count"].ToTagByte();

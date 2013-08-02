@@ -8,14 +8,14 @@ namespace Substrate.Core
 
     public class BlockTileEntities
     {
-        private XZYByteArray _blocks;
+        private IDataArray3 _blocks;
         private TagNodeList _tileEntities;
 
         private Dictionary<BlockKey, TagNodeCompound> _tileEntityTable;
 
         public event BlockCoordinateHandler TranslateCoordinates;
 
-        public BlockTileEntities (XZYByteArray blocks, TagNodeList tileEntities)
+        public BlockTileEntities (IDataArray3 blocks, TagNodeList tileEntities)
         {
             _blocks = blocks;
             _tileEntities = tileEntities;
@@ -43,18 +43,15 @@ namespace Substrate.Core
                 return null;
             }
 
-            return TileEntityFactory.Create(te);
+            return TileEntityFactory.CreateGeneric(te);
         }
 
         public void SetTileEntity (int x, int y, int z, TileEntity te)
         {
             BlockInfoEx info = BlockInfo.BlockTable[_blocks[x, y, z]] as BlockInfoEx;
-            if (info == null) {
-                throw new InvalidOperationException("The given block is of a type that does not support TileEntities.");
-            }
-
-            if (te.GetType() != TileEntityFactory.Lookup(info.TileEntityName)) {
-                throw new ArgumentException("The TileEntity type is not valid for this block.", "te");
+            if (info != null) {
+                if (te.GetType() != TileEntityFactory.Lookup(info.TileEntityName))
+                    throw new ArgumentException("The TileEntity type is not valid for this block.", "te");
             }
 
             BlockKey key = (TranslateCoordinates != null)

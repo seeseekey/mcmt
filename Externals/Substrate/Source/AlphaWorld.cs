@@ -19,15 +19,15 @@ namespace Substrate
 
         private Level _level;
 
-        private Dictionary<int, AlphaChunkManager> _chunkMgrs;
-        private Dictionary<int, BlockManager> _blockMgrs;
+        private Dictionary<string, AlphaChunkManager> _chunkMgrs;
+        private Dictionary<string, BlockManager> _blockMgrs;
 
         private PlayerManager _playerMan;
 
         private AlphaWorld ()
         {
-            _chunkMgrs = new Dictionary<int, AlphaChunkManager>();
-            _blockMgrs = new Dictionary<int, BlockManager>();
+            _chunkMgrs = new Dictionary<string, AlphaChunkManager>();
+            _blockMgrs = new Dictionary<string, BlockManager>();
         }
 
         /// <summary>
@@ -44,7 +44,7 @@ namespace Substrate
         /// <returns>A <see cref="BlockManager"/> tied to the default dimension in this world.</returns>
         /// <remarks>Get a <see cref="BlockManager"/> if you need to manage blocks as a global, unbounded matrix.  This abstracts away
         /// any higher-level organizational divisions.  If your task is going to be heavily performance-bound, consider getting a
-        /// <see cref="BetaChunkManager"/> instead and working with blocks on a chunk-local level.</remarks>
+        /// <see cref="RegionChunkManager"/> instead and working with blocks on a chunk-local level.</remarks>
         public new BlockManager GetBlockManager ()
         {
             return GetBlockManagerVirt(Dimension.DEFAULT) as BlockManager;
@@ -57,28 +57,28 @@ namespace Substrate
         /// <returns>A <see cref="BlockManager"/> tied to the given dimension in this world.</returns>
         /// <remarks>Get a <see cref="BlockManager"/> if you need to manage blocks as a global, unbounded matrix.  This abstracts away
         /// any higher-level organizational divisions.  If your task is going to be heavily performance-bound, consider getting a
-        /// <see cref="BetaChunkManager"/> instead and working with blocks on a chunk-local level.</remarks>
+        /// <see cref="RegionChunkManager"/> instead and working with blocks on a chunk-local level.</remarks>
         public new BlockManager GetBlockManager (int dim)
         {
             return GetBlockManagerVirt(dim) as BlockManager;
         }
 
         /// <summary>
-        /// Gets a <see cref="BetaChunkManager"/> for the default dimension.
+        /// Gets a <see cref="RegionChunkManager"/> for the default dimension.
         /// </summary>
-        /// <returns>A <see cref="BetaChunkManager"/> tied to the default dimension in this world.</returns>
-        /// <remarks>Get a <see cref="BetaChunkManager"/> if you you need to work with easily-digestible, bounded chunks of blocks.</remarks>
+        /// <returns>A <see cref="RegionChunkManager"/> tied to the default dimension in this world.</returns>
+        /// <remarks>Get a <see cref="RegionChunkManager"/> if you you need to work with easily-digestible, bounded chunks of blocks.</remarks>
         public new AlphaChunkManager GetChunkManager ()
         {
             return GetChunkManagerVirt(Dimension.DEFAULT) as AlphaChunkManager;
         }
 
         /// <summary>
-        /// Gets a <see cref="BetaChunkManager"/> for the given dimension.
+        /// Gets a <see cref="RegionChunkManager"/> for the given dimension.
         /// </summary>
         /// <param name="dim">The id of the dimension to look up.</param>
-        /// <returns>A <see cref="BetaChunkManager"/> tied to the given dimension in this world.</returns>
-        /// <remarks>Get a <see cref="BetaChunkManager"/> if you you need to work with easily-digestible, bounded chunks of blocks.</remarks>
+        /// <returns>A <see cref="RegionChunkManager"/> tied to the given dimension in this world.</returns>
+        /// <remarks>Get a <see cref="RegionChunkManager"/> if you you need to work with easily-digestible, bounded chunks of blocks.</remarks>
         public new AlphaChunkManager GetChunkManager (int dim)
         {
             return GetChunkManagerVirt(dim) as AlphaChunkManager;
@@ -94,14 +94,12 @@ namespace Substrate
             return GetPlayerManagerVirt() as PlayerManager;
         }
 
-        /// <summary>
-        /// Saves the world's <see cref="Level"/> data, and any <see cref="Chunk"/> objects known to have unsaved changes.
-        /// </summary>
-        public void Save ()
+        /// <inherits />
+        public override void Save ()
         {
             _level.Save();
 
-            foreach (KeyValuePair<int, AlphaChunkManager> cm in _chunkMgrs) {
+            foreach (KeyValuePair<string, AlphaChunkManager> cm in _chunkMgrs) {
                 cm.Value.Save();
             }
         }
@@ -131,6 +129,11 @@ namespace Substrate
         /// <exclude/>
         protected override IBlockManager GetBlockManagerVirt (int dim)
         {
+            return GetBlockManagerVirt(DimensionFromInt(dim));
+        }
+
+        protected override IBlockManager GetBlockManagerVirt (string dim)
+        {
             BlockManager rm;
             if (_blockMgrs.TryGetValue(dim, out rm)) {
                 return rm;
@@ -142,6 +145,11 @@ namespace Substrate
 
         /// <exclude/>
         protected override IChunkManager GetChunkManagerVirt (int dim)
+        {
+            return GetChunkManagerVirt(DimensionFromInt(dim));
+        }
+
+        protected override IChunkManager GetChunkManagerVirt (string dim)
         {
             AlphaChunkManager rm;
             if (_chunkMgrs.TryGetValue(dim, out rm)) {
@@ -165,11 +173,19 @@ namespace Substrate
             return _playerMan;
         }
 
-        private void OpenDimension (int dim)
+        private string DimensionFromInt (int dim)
+        {
+            if (dim == Dimension.DEFAULT)
+                return "";
+            else
+                return "DIM" + dim;
+        }
+
+        private void OpenDimension (string dim)
         {
             string path = Path;
-            if (dim != Dimension.DEFAULT) {
-                path = IO.Path.Combine(path, "DIM" + dim);
+            if (!String.IsNullOrEmpty(dim)) {
+                path = IO.Path.Combine(path, dim);
             }
 
             if (!Directory.Exists(path)) {
@@ -177,7 +193,7 @@ namespace Substrate
             }
 
             AlphaChunkManager cm = new AlphaChunkManager(path);
-            BlockManager bm = new BlockManager(cm);
+            BlockManager bm = new AlphaBlockManager(cm);
 
             _chunkMgrs[dim] = cm;
             _blockMgrs[dim] = bm;
@@ -217,6 +233,7 @@ namespace Substrate
 
             Path = path;
             _level = new Level(this);
+            _level.Version = 0;
 
             return this;
         }
@@ -224,12 +241,17 @@ namespace Substrate
         private bool LoadLevel ()
         {
             NBTFile nf = new NBTFile(IO.Path.Combine(Path, _levelFile));
-            Stream nbtstr = nf.GetDataInputStream();
-            if (nbtstr == null) {
-                return false;
-            }
+            NbtTree tree;
 
-            NbtTree tree = new NbtTree(nbtstr);
+            using (Stream nbtstr = nf.GetDataInputStream())
+            {
+                if (nbtstr == null)
+                {
+                    return false;
+                }
+
+                tree = new NbtTree(nbtstr);
+            }
 
             _level = new Level(this);
             _level = _level.LoadTreeSafe(tree.Root);

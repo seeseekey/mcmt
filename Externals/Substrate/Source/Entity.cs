@@ -97,6 +97,14 @@ namespace Substrate
         }
 
         /// <summary>
+        /// Gets the source <see cref="TagNodeCompound"/> used to create this <see cref="Entity"/> if it exists.
+        /// </summary>
+        public TagNodeCompound Source
+        {
+            get { return _source; }
+        }
+
+        /// <summary>
         /// Constructs a new generic <see cref="Entity"/> with default values.
         /// </summary>
         public Entity ()
@@ -104,6 +112,8 @@ namespace Substrate
             _pos = new Vector3();
             _motion = new Vector3();
             _rotation = new Orientation();
+
+            _source = new TagNodeCompound();
         }
 
         /// <summary>

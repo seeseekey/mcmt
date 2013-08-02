@@ -3,15 +3,53 @@ using Substrate.Core;
 
 namespace Substrate
 {
+    public class AlphaBlockManager : BlockManager
+    {
+        public AlphaBlockManager (IChunkManager cm)
+            : base(cm)
+        {
+            IChunk c = AlphaChunk.Create(0, 0);
+
+            chunkXDim = c.Blocks.XDim;
+            chunkYDim = c.Blocks.YDim;
+            chunkZDim = c.Blocks.ZDim;
+            chunkXMask = chunkXDim - 1;
+            chunkYMask = chunkYDim - 1;
+            chunkZMask = chunkZDim - 1;
+            chunkXLog = Log2(chunkXDim);
+            chunkYLog = Log2(chunkYDim);
+            chunkZLog = Log2(chunkZDim);
+        }
+    }
+
+    public class AnvilBlockManager : BlockManager
+    {
+        public AnvilBlockManager (IChunkManager cm)
+            : base(cm)
+        {
+            IChunk c = AnvilChunk.Create(0, 0);
+
+            chunkXDim = c.Blocks.XDim;
+            chunkYDim = c.Blocks.YDim;
+            chunkZDim = c.Blocks.ZDim;
+            chunkXMask = chunkXDim - 1;
+            chunkYMask = chunkYDim - 1;
+            chunkZMask = chunkZDim - 1;
+            chunkXLog = Log2(chunkXDim);
+            chunkYLog = Log2(chunkYDim);
+            chunkZLog = Log2(chunkZDim);
+        }
+    }
+
     /// <summary>
     /// Represents an Alpha-compatible interface for globally managing blocks.
     /// </summary>
-    public class BlockManager : IBlockManager
+    public abstract class BlockManager : IVersion10BlockManager, IBlockManager
     {
         public const int MIN_X = -32000000;
         public const int MAX_X = 32000000;
         public const int MIN_Y = 0;
-        public const int MAX_Y = 128;
+        public const int MAX_Y = 256;
         public const int MIN_Z = -32000000;
         public const int MAX_Z = 32000000;
 
@@ -31,6 +69,7 @@ namespace Substrate
 
         private bool _autoLight = true;
         private bool _autoFluid = false;
+        private bool _autoTileTick = false;
 
         /// <summary>
         /// Gets or sets a value indicating whether changes to blocks will trigger automatic lighting updates.
@@ -51,24 +90,21 @@ namespace Substrate
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether changes to blocks will trigger automatic fluid updates.
+        /// </summary>
+        public bool AutoTileTick
+        {
+            get { return _autoTileTick; }
+            set { _autoTileTick = value; }
+        }
+
+        /// <summary>
         /// Constructs a new <see cref="BlockManager"/> instance on top of the given <see cref="IChunkManager"/>.
         /// </summary>
         /// <param name="cm">An <see cref="IChunkManager"/> instance.</param>
         public BlockManager (IChunkManager cm)
         {
             chunkMan = cm;
-
-            Chunk c = Chunk.Create(0, 0);
-
-            chunkXDim = c.Blocks.XDim;
-            chunkYDim = c.Blocks.YDim;
-            chunkZDim = c.Blocks.ZDim;
-            chunkXMask = chunkXDim - 1;
-            chunkYMask = chunkYDim - 1;
-            chunkZMask = chunkZDim - 1;
-            chunkXLog = Log2(chunkXDim);
-            chunkYLog = Log2(chunkYDim);
-            chunkZLog = Log2(chunkZDim);
         }
 
         /// <summary>
@@ -141,7 +177,7 @@ namespace Substrate
             return chunkMan.GetChunkRef(x, z);
         }
 
-        private int Log2 (int x)
+        protected int Log2 (int x)
         {
             int c = 0;
             while (x > 1) {
@@ -178,6 +214,11 @@ namespace Substrate
         /// <inheritdoc/>
         public void SetBlock (int x, int y, int z, IBlock block)
         {
+            cache = GetChunk(x, y, z);
+            if (cache == null || !Check(x, y, z)) {
+                return;
+            }
+
             cache.Blocks.SetBlock(x, y, z, block);
         }
 
@@ -213,14 +254,17 @@ namespace Substrate
 
             bool autolight = cache.Blocks.AutoLight;
             bool autofluid = cache.Blocks.AutoFluid;
+            bool autoTileTick = cache.Blocks.AutoTileTick;
 
             cache.Blocks.AutoLight = _autoLight;
             cache.Blocks.AutoFluid = _autoFluid;
+            cache.Blocks.AutoTileTick = _autoTileTick;
 
             cache.Blocks.SetID(x & chunkXMask, y & chunkYMask, z & chunkZMask, id);
 
             cache.Blocks.AutoFluid = autofluid;
             cache.Blocks.AutoLight = autolight;
+            cache.Blocks.AutoTileTick = autoTileTick;
         }
 
         #endregion
@@ -241,6 +285,11 @@ namespace Substrate
         /// <inheritdoc/>
         public void SetBlock (int x, int y, int z, IDataBlock block)
         {
+            cache = GetChunk(x, y, z);
+            if (cache == null || !Check(x, y, z)) {
+                return;
+            }
+
             cache.Blocks.SetBlock(x, y, z, block);
         }
 
@@ -284,6 +333,11 @@ namespace Substrate
         /// <inheritdoc/>
         public void SetBlock (int x, int y, int z, ILitBlock block)
         {
+            cache = GetChunk(x, y, z);
+            if (cache == null || !Check(x, y, z)) {
+                return;
+            }
+
             cache.Blocks.SetBlock(x, y, z, block);
         }
 
@@ -393,6 +447,11 @@ namespace Substrate
         /// <inheritdoc/>
         public void SetBlock (int x, int y, int z, IPropertyBlock block)
         {
+            cache = GetChunk(x, y, z);
+            if (cache == null || !Check(x, y, z)) {
+                return;
+            }
+
             cache.Blocks.SetBlock(x, y, z, block);
         }
 
@@ -438,6 +497,98 @@ namespace Substrate
             }
 
             cache.Blocks.ClearTileEntity(x & chunkXMask, y & chunkYMask, z & chunkZMask);
+        }
+
+        #endregion
+
+
+        #region IActiveBlockContainer Members
+
+        IActiveBlock IActiveBlockCollection.GetBlock (int x, int y, int z)
+        {
+            return GetBlock(x, y, z);
+        }
+
+        IActiveBlock IActiveBlockCollection.GetBlockRef (int x, int y, int z)
+        {
+            return GetBlockRef(x, y, z);
+        }
+
+        /// <inheritdoc/>
+        public void SetBlock (int x, int y, int z, IActiveBlock block)
+        {
+            cache = GetChunk(x, y, z);
+            if (cache == null || !Check(x, y, z)) {
+                return;
+            }
+
+            cache.Blocks.SetBlock(x, y, z, block);
+        }
+
+        /// <inheritdoc/>
+        public int GetTileTickValue (int x, int y, int z)
+        {
+            cache = GetChunk(x, y, z);
+            if (cache == null || !Check(x, y, z)) {
+                return 0;
+            }
+
+            return cache.Blocks.GetTileTickValue(x & chunkXMask, y & chunkYMask, z & chunkZMask);
+        }
+
+        /// <inheritdoc/>
+        public void SetTileTickValue (int x, int y, int z, int tickValue)
+        {
+            cache = GetChunk(x, y, z);
+            if (cache == null || !Check(x, y, z)) {
+                return;
+            }
+
+            cache.Blocks.SetTileTickValue(x & chunkXMask, y & chunkYMask, z & chunkZMask, tickValue);
+        }
+
+        /// <inheritdoc/>
+        public TileTick GetTileTick (int x, int y, int z)
+        {
+            cache = GetChunk(x, y, z);
+            if (cache == null || !Check(x, y, z)) {
+                return null;
+            }
+
+            return cache.Blocks.GetTileTick(x & chunkXMask, y & chunkYMask, z & chunkZMask);
+        }
+
+        /// <inheritdoc/>
+        public void SetTileTick (int x, int y, int z, TileTick te)
+        {
+            cache = GetChunk(x, y, z);
+            if (cache == null || !Check(x, y, z)) {
+                return;
+            }
+
+            cache.Blocks.SetTileTick(x & chunkXMask, y & chunkYMask, z & chunkZMask, te);
+        }
+
+        /// <inheritdoc/>
+        public void CreateTileTick (int x, int y, int z)
+        {
+            cache = GetChunk(x, y, z);
+            if (cache == null || !Check(x, y, z)) {
+                return;
+            }
+
+            cache.Blocks.CreateTileTick(x & chunkXMask, y & chunkYMask, z & chunkZMask);
+        }
+
+        /// <inheritdoc/>
+        public void ClearTileTick (int x, int y, int z)
+        {
+            cache = GetChunk(x, y, z);
+            if (cache == null || !Check(x, y, z)) {
+                return;
+            }
+
+            cache.Blocks.ClearTileTick(x & chunkXMask, y & chunkYMask, z & chunkZMask);
         }
 
         #endregion

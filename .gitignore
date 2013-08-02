@@ -1,14 +1,35 @@
-# Build folder
-mcmt/bin
-mcmt/obj
-
-# Debug files
+~
+build/
+[Bb]in
+[Dd]ebug*/
+obj/
+[Rr]elease*/
+_ReSharper*/
+[Tt]est[Rr]esult
+[Bb]uild[Ll]og.*
+*.swp
+*.userprefs
+*.obj
+*.pdb
+*.user
+*.aps
+*.pch
+*.vspscc
+*.vssscc
 *.pidb
-
-# Solution files
+*_i.c
+*_p.c
+*.ncb
 *.suo
-
-# Misc files
+*.tlb
+*.tlh
+*.bak
 *.cache
-*.exe
-*.manifest
+*.ilk
+*.log
+*.lib
+*.sbr
+*.scc
+*.[Rr]e[Ss]harper
+*.zip
+*.[Pp]ublish.xml
