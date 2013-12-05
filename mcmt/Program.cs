@@ -29,8 +29,8 @@ namespace mcmt
 	{
 		static void DisplayHelp()
 		{
-			Console.WriteLine("mcmt v1.10");
-			Console.WriteLine("(c) 2012 by the seeseekey (http://seeseekey.net)");
+			Console.WriteLine("mcmt 13.12");
+			Console.WriteLine("(c) 2012, 2013 by the seeseekey (http://seeseekey.net)");
 			Console.WriteLine("");
 			Console.WriteLine("Usage: mcmt -action -parameters");
 			Console.WriteLine("  e.g. mcmt -repairBedrockLayer D:\\world");
