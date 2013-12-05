@@ -46,7 +46,7 @@ namespace mcmt
 		private static void CreateFlatWorld(string dest, int xmin, int xmax, int zmin, int zmax)
 		{
 			// This will instantly create any necessary directory structure
-			BetaWorld world=BetaWorld.Create(dest);
+			NbtWorld world=AnvilWorld.Create(dest);
 			IChunkManager cm=world.GetChunkManager();
 
 			// We can set different world parameters
@@ -218,7 +218,7 @@ namespace mcmt
 		private static void RepairBedrockLayer(string worldPath)
 		{
 			// Open our world
-			BetaWorld world=BetaWorld.Open(worldPath);
+			NbtWorld world=NbtWorld.Open(worldPath);
 
 			// The chunk manager is more efficient than the block manager for
 			// this purpose, since we'll inspect every block
@@ -261,7 +261,7 @@ namespace mcmt
 		private static void ReplaceBlocks(string worldPath, int before, int after)
 		{
 			// Open our world
-			BetaWorld world=BetaWorld.Open(worldPath);
+			NbtWorld world=NbtWorld.Open(worldPath);
 
 			// The chunk manager is more efficient than the block manager for
 			// this purpose, since we'll inspect every block
