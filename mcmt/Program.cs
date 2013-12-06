@@ -22,6 +22,8 @@ using CSCL;
 using Substrate;
 using Substrate.Core;
 using CSCL.Helpers;
+using CSCL.Imaging;
+using System.Drawing;
 
 namespace mcmt
 {
@@ -302,6 +304,116 @@ namespace mcmt
 				cm.Save();
 			}
 		}
+
+		//Blöcke die sich immer in natürlichen Umgebungen befinden (http://minecraft.gamepedia.com/Blocks)
+		static int[] naturallyGeneratedBlocks= { BlockType.AIR, BlockType.STONE, BlockType.GRASS, BlockType.DIRT, BlockType.BEDROCK, BlockType.WATER, BlockType.LAVA,
+									  BlockType.SAND,  BlockType.GRAVEL,  BlockType.GOLD_ORE,  BlockType.IRON_ORE,  BlockType.COAL_ORE,  BlockType.WOOD,
+									  BlockType.LEAVES, BlockType.LAPIS_ORE,  BlockType.SANDSTONE,  BlockType.GRASS,  BlockType.DEAD_SHRUB,  BlockType.YELLOW_FLOWER, 
+									  BlockType.RED_ROSE, BlockType.BROWN_MUSHROOM, BlockType.RED_MUSHROOM,  BlockType.DIAMOND_ORE,  BlockType.REDSTONE_ORE, BlockType.SNOW,  
+									  BlockType.ICE,  BlockType.CACTUS, BlockType.CLAY_BLOCK, BlockType.SUGAR_CANE, BlockType.PUMPKIN, BlockType.HUGE_BROWN_MUSHROOM, BlockType.HUGE_RED_MUSHROOM,
+									  BlockType.MELON, BlockType.VINES, BlockType.MYCELIUM, BlockType.LILLY_PAD, BlockType.END_PORTAL_FRAME, BlockType.COCOA_PLANT, BlockType.EMERALD_ORE};
+
+		static int[] naturallyCreatedBlocks= { BlockType.AIR, BlockType.STONE, BlockType.GRASS, BlockType.DIRT, BlockType.COBBLESTONE, BlockType.WATER,
+									  BlockType.BROWN_MUSHROOM,  BlockType.RED_MUSHROOM,  BlockType.OBSIDIAN,  BlockType.FIRE,  BlockType.SNOW,  BlockType.ICE,
+									  BlockType.CACTUS, BlockType.SUGAR_CANE,  BlockType.VINES,  BlockType.MYCELIUM};
+
+		private static HashSet<int> GetNaturallyGeneratedBlocks()
+		{
+			HashSet<int> ret=new HashSet<int>();
+
+			foreach(int blockID in naturallyGeneratedBlocks)
+			{
+				ret.Add(blockID);
+			}
+
+			return ret;
+		}
+
+		private static HashSet<int> GetNaturallyCreatedBlocks()
+		{
+			HashSet<int> ret=new HashSet<int>();
+
+			foreach(int blockID in naturallyCreatedBlocks)
+			{
+				ret.Add(blockID);
+			}
+
+			return ret;
+		}
+
+		private static HashSet<int> GetNaturallyBlocks()
+		{
+			HashSet<int> ret=new HashSet<int>();
+
+			foreach(int blockID in naturallyGeneratedBlocks)
+			{
+				if(!ret.Contains(blockID)) ret.Add(blockID);
+			}
+
+			foreach(int blockID in naturallyCreatedBlocks)
+			{
+				if(!ret.Contains(blockID)) ret.Add(blockID);
+			}
+
+			return ret;
+		}
+
+		private static void RemoveNaturalChunks(string worldPath)
+		{
+			// Open our world
+			NbtWorld world=NbtWorld.Open(worldPath);
+
+			//Prepare
+			HashSet<int> naturalBlocksAsHashset=GetNaturallyBlocks();
+
+			// The chunk manager is more efficient than the block manager for
+			// this purpose, since we'll inspect every block
+			IChunkManager cm=world.GetChunkManager();
+
+			foreach(ChunkRef chunk in cm)
+			{
+				Console.WriteLine("Process chunk: {0}/{1}", chunk.X, chunk.Z);
+
+				// You could hardcode your dimensions, but maybe some day they
+				// won't always be 16.  Also the CLR is a bit stupid and has
+				// trouble optimizing repeated calls to Chunk.Blocks.xx, so we
+				// cache them in locals
+				int xdim=chunk.Blocks.XDim;
+				int ydim=chunk.Blocks.YDim;
+				int zdim=chunk.Blocks.ZDim;
+
+				bool natural=true;
+
+				// x, z, y is the most efficient order to scan blocks (not that
+				// you should care about internal detail)
+				for(int x=0; x<xdim; x++)
+				{
+					for(int z=0; z<zdim; z++)
+					{
+						for(int y=0; y<ydim; y++)
+						{
+							int blockID=chunk.Blocks.GetID(x, y, z);
+
+							if(!naturalBlocksAsHashset.Contains(blockID))
+							{
+								natural=false;
+								break;
+							}
+						}
+
+						if(natural==false) break;
+					}
+
+					if(natural==false) break;
+				}
+
+				if(natural)
+				{
+					Console.WriteLine("Remove chunk: {0}/{1}", chunk.X, chunk.Z);
+					cm.DeleteChunk(chunk.X, chunk.Z);
+				}
+			}
+		}
 		#endregion
 		
 		public static void Main(string[] args)
@@ -389,6 +501,17 @@ namespace mcmt
 					int after=Convert.ToInt32(files[2]);
 
 					ReplaceBlocks(worldPath, before, after);
+				}
+			}
+			else if(parameters.ContainsKey("removeNaturalChunks"))
+			{
+				List<string> files=CommandLineHelpers.GetFilesFromCommandline(parameters);
+
+				if(files.Count<1) Console.WriteLine("Need more parameters!");
+				else
+				{
+					string worldPath=files[0];
+					RemoveNaturalChunks(worldPath);
 				}
 			}
 			else
