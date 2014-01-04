@@ -194,6 +194,8 @@ namespace mcmt
 			IChunkManager cm=world.GetChunkManager();
 
 			// Remove entities
+			int z=0;
+
 			foreach(ChunkRef chunk in cm)
 			{
 				// Skip chunks that don't cover our selected area
@@ -211,9 +213,15 @@ namespace mcmt
 				if(removeCount>0)
 				{
 					Console.WriteLine("{0} entities from type {1} removed in chunk {2}/{3}", removeCount, entityId, chunk.X, chunk.Z);
+					cm.Save();
 				}
 
-				cm.Save();
+				z++;
+
+				if(z%1000==0)
+				{
+					Console.WriteLine("{0} chunks processed", z);
+				}
 			}
 		}
 
