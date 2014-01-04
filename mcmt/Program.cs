@@ -190,7 +190,7 @@ namespace mcmt
 			int z2=BlockManager.MAX_Z;
 
 			// Load world
-			BetaWorld world=BetaWorld.Open(worldPath);
+			NbtWorld world=NbtWorld.Open(worldPath);
 			IChunkManager cm=world.GetChunkManager();
 
 			// Remove entities
