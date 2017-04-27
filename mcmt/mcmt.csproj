@@ -22,6 +22,7 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -48,16 +49,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <ProjectReference Include="..\..\CSCL\CSCL\CSCL.csproj">
-      <Project>{0E720343-5366-4C3A-BC59-7B7FD2C311B5}</Project>
-      <Name>CSCL</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Externals\Substrate\Substrate %28NET4%29.csproj">
-      <Project>{7264A1C4-AB4A-4437-B252-7379B98B5509}</Project>
-      <Name>Substrate (NET4)</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">
       <Visible>False</Visible>
       <ProductName>Microsoft .NET Framework 4 %28x86 and x64%29</ProductName>
@@ -78,5 +69,19 @@
       <ProductName>Windows Installer 3.1</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\External\Substrate\SubstrateCS\Substrate %28NET4%29.csproj">
+      <Project>{7264A1C4-AB4A-4437-B252-7379B98B5509}</Project>
+      <Name>Substrate (NET4)</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Xevle\Xevle.Core\Xevle.Core.csproj">
+      <Project>{4D90F3D7-F459-4272-A2FB-7A6B6987EA2D}</Project>
+      <Name>Xevle.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Xevle\Xevle.IO\Xevle.IO.csproj">
+      <Project>{FF1643AA-E194-4145-8248-028ED9503EB4}</Project>
+      <Name>Xevle.IO</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

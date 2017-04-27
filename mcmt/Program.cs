@@ -18,12 +18,10 @@
 
 using System;
 using System.Collections.Generic;
-using CSCL;
 using Substrate;
 using Substrate.Core;
-using CSCL.Helpers;
-using CSCL.Imaging;
 using System.Drawing;
+using Xevle.Core.Helper;
 
 namespace mcmt
 {
@@ -31,8 +29,8 @@ namespace mcmt
 	{
 		static void DisplayHelp()
 		{
-			Console.WriteLine("mcmt 13.12");
-			Console.WriteLine("(c) 2012, 2013 by the seeseekey (http://seeseekey.net)");
+			Console.WriteLine("mcmt 17.04");
+			Console.WriteLine("(c) 2012 - 2017 by the seeseekey (https://seeseekey.net)");
 			Console.WriteLine("");
 			Console.WriteLine("Usage: mcmt -action -parameters");
 			Console.WriteLine("  e.g. mcmt -repairBedrockLayer D:\\world");
